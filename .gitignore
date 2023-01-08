@@ -2,3 +2,5 @@
 build/
 *.exe
 *.spec
+
+uptime.txt
