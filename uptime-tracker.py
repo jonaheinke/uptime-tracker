@@ -12,19 +12,20 @@ from datetime import datetime
 # -------------------------------------------------------------------------------------------------------------------- #
 
 filename = os.path.abspath("uptime.txt")
-original_format_string = "%d.%m.%Y: %H:%M - %H:%M"
+new_date_format_string = "%d.%m.%Y: %H:%M - %H:%M"
 replacement_format_string = "%H:%M"
 
 
 
 # -------------------------------------------------------------------------------------------------------------------- #
-#                                                       ON ENTER                                                       #
+#                                                WRITE NEW DATE TO FILE                                                #
 # -------------------------------------------------------------------------------------------------------------------- #
 
-with open(filename, "a") as file:
-	if file.tell():			#if file is not empty
-		file.write("\n")	#add a new line character
-	file.write(datetime.now().strftime(original_format_string))
+def new_date_entry():
+	with open(filename, "a") as file:
+		if file.tell():			#if file is not empty
+			file.write("\n")	#add a new line character
+		file.write(datetime.now().strftime(new_date_format_string))
 
 
 
@@ -33,9 +34,9 @@ with open(filename, "a") as file:
 # -------------------------------------------------------------------------------------------------------------------- #
 
 def update_time():
-	with open(filename, "r+") as file: #"r+" mode is required to override the last line, with "a" or "a+" is always just appends to the end
-		#generate the new time
-		time_str = datetime.now().strftime(replacement_format_string)
+	#generate the new time
+	time_str = datetime.now().strftime(replacement_format_string)
+	with open(filename, "r+") as file: #"r+" mode is required to override the last line, with "a" or "a+" it always just appends to the end
 		#seek to EOF
 		file.seek(0, 2)
 		#seek to length of the new time string before EOF, has to be seperate from the previous seek because python is weird and prevents seeking backwards from EOF since 3.2
@@ -50,11 +51,16 @@ def update_time():
 # -------------------------------------------------------------------------------------------------------------------- #
 
 try:
-	#wait until the next minute
-	time.sleep(60 - datetime.now().time().second)
+	new_date_entry()
 	while True:
-		#write the current time to file every minute
-		update_time()
-		time.sleep(60)
+		#wait until the next minute
+		time.sleep(60 - datetime.now().second)
+		now = datetime.now()
+		if now.hour or now.minute:
+			#write the current time to file every minute
+			update_time()
+		else:
+			#write a new date every day at midnight
+			new_date_entry()
 except:
 	pass
